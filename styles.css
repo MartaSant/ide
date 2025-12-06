@@ -63,6 +63,24 @@ body {
     gap: 0.5rem;
 }
 
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.logo-link:hover {
+    transform: scale(1.05);
+}
+
+.logo-image {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
 .logo-text {
     background: var(--gradient-1);
     -webkit-background-clip: text;
@@ -417,22 +435,21 @@ body {
     margin-top: 4rem;
 }
 
-/* Team Slider for Mobile */
+/* Team Slider for Mobile - Desktop: normale grid layout */
 .team-slider-wrapper {
     position: relative;
     width: 100%;
 }
 
-.team-slider {
-    display: flex;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    gap: 0;
-}
-
-.team-slider .team-card {
-    flex: 0 0 100%;
-    min-width: 100%;
-    margin: 0;
+/* Su desktop, lo slider wrapper e slider non interferiscono con il grid */
+@media (min-width: 769px) {
+    .team-slider-wrapper {
+        display: contents; /* Le card sono direttamente nel grid */
+    }
+    
+    .team-slider {
+        display: contents; /* Le card sono direttamente nel grid */
+    }
 }
 
 .team-card {
@@ -792,6 +809,13 @@ body {
     gap: 0.5rem;
 }
 
+.footer-logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    margin: 0 auto;
+}
+
 .footer-text {
     color: var(--text-secondary);
     margin-bottom: 2rem;
@@ -868,19 +892,21 @@ body {
     }
 
     .team-grid {
-        grid-template-columns: 1fr;
+        display: block; /* Cambia da grid a block per lo slider mobile */
         overflow: hidden;
     }
 
     .team-slider-wrapper {
         overflow: hidden;
         position: relative;
+        width: 100%;
     }
 
     .team-slider {
-        display: flex;
+        display: flex !important; /* Forza flex su mobile */
         width: 300%;
         transform: translateX(0);
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .team-slider .team-card {
@@ -985,18 +1011,35 @@ body {
     }
 }
 
-/* Hide slider navigation on desktop */
+/* Desktop: layout grid normale, nessuno slider */
 @media (min-width: 769px) {
     .slider-nav {
         display: none;
     }
 
-    .team-slider {
-        display: contents;
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 3rem;
+        overflow: visible;
     }
 
     .team-slider-wrapper {
         overflow: visible;
+        position: static;
+    }
+
+    .team-slider {
+        display: contents; /* Le card sono direttamente nel grid */
+        width: auto;
+        transform: none;
+    }
+
+    .team-slider .team-card {
+        flex: none;
+        min-width: auto;
+        padding: 0;
+        width: 100%;
     }
 }
 
