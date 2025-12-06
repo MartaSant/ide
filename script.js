@@ -1,3 +1,39 @@
+// Service Worker Registration - Modalità sviluppo (Network Only)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+            .then((registration) => {
+                console.log('[Service Worker] Registrato con successo:', registration.scope);
+                
+                // Controlla se c'è un aggiornamento disponibile
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('[Service Worker] Nuova versione disponibile');
+                            // Forza l'attivazione immediata
+                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error('[Service Worker] Errore durante la registrazione:', error);
+            });
+        
+        // Gestisce l'aggiornamento del service worker
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                console.log('[Service Worker] Controller cambiato, ricarica pagina...');
+                // Opzionale: ricarica automatica la pagina quando il service worker viene aggiornato
+                // window.location.reload();
+            }
+        });
+    });
+}
+
 // Navigation scroll effect
 const navbar = document.getElementById('navbar');
 const hamburger = document.getElementById('hamburger');
