@@ -121,27 +121,162 @@ contactForm.addEventListener('submit', (e) => {
     }, 1500);
 });
 
-// Add mouse move parallax effect to team cards
+// Add mouse move parallax effect to team cards (desktop only)
 const teamCards = document.querySelectorAll('.team-card');
 
 teamCards.forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    // Only apply parallax on desktop (non-touch devices)
+    if (window.innerWidth > 768) {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
         
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        
-        const rotateX = (y - centerY) / 10;
-        const rotateY = (centerX - x) / 10;
-        
-        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+        });
+    }
+});
+
+// Team Slider for Mobile
+let currentSlide = 0;
+const totalSlides = 3;
+const teamSlider = document.querySelector('.team-slider');
+const dots = document.querySelectorAll('.dot');
+const prevBtn = document.querySelector('.prev-btn');
+const nextBtn = document.querySelector('.next-btn');
+
+// Handle card flip on mobile (tap to flip)
+if (window.innerWidth <= 768) {
+    teamCards.forEach(card => {
+        let isFlipped = false;
+        card.addEventListener('click', (e) => {
+            // Don't flip if clicking on navigation buttons
+            if (e.target.closest('.slider-btn') || e.target.closest('.dot')) {
+                return;
+            }
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        });
     });
+}
+
+function updateSlider() {
+    if (teamSlider && window.innerWidth <= 768) {
+        const translateX = -currentSlide * (100 / totalSlides);
+        teamSlider.style.transform = `translateX(${translateX}%)`;
+        
+        // Update dots
+        dots.forEach((dot, index) => {
+            if (index === currentSlide) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+}
+
+// Navigation buttons
+if (prevBtn && nextBtn) {
+    prevBtn.addEventListener('click', () => {
+        if (currentSlide > 0) {
+            currentSlide--;
+        } else {
+            currentSlide = totalSlides - 1;
+        }
+        updateSlider();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentSlide < totalSlides - 1) {
+            currentSlide++;
+        } else {
+            currentSlide = 0;
+        }
+        updateSlider();
+    });
+}
+
+// Dot navigation
+dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+        currentSlide = index;
+        updateSlider();
+    });
+});
+
+// Touch/Swipe support
+let touchStartX = 0;
+let touchEndX = 0;
+
+if (teamSlider) {
+    teamSlider.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    teamSlider.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+}
+
+function handleSwipe() {
+    if (window.innerWidth > 768) return; // Only on mobile
     
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
-    });
+    const swipeThreshold = 50;
+    const diff = touchStartX - touchEndX;
+    
+    if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+            // Swipe left - next slide
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+            } else {
+                currentSlide = 0;
+            }
+        } else {
+            // Swipe right - previous slide
+            if (currentSlide > 0) {
+                currentSlide--;
+            } else {
+                currentSlide = totalSlides - 1;
+            }
+        }
+        updateSlider();
+    }
+}
+
+// Handle window resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        if (window.innerWidth > 768) {
+            // Reset slider position on desktop
+            if (teamSlider) {
+                teamSlider.style.transform = 'translateX(0)';
+            }
+            currentSlide = 0;
+            updateSlider();
+        } else {
+            // Update slider on mobile
+            updateSlider();
+        }
+    }, 250);
 });
 
 // Add typing effect to hero title (optional enhancement)
